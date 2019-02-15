@@ -3,47 +3,40 @@
 #include <string.h>
 int main()
 {
-    const long sizepu = 500*500;  // max. Bildgröße
+    const long sizepu = 500*500; // max. Bildgröße
     FILE *Bildfile;
-    int puffer[sizepu];  // Puffer für Bilder
 
-    char *hallo; // Nachricht
-    char *code; // Code
-    int spe = 0;  // Zähler bei malloc code/hallo
-    char car;  // char für hallo
-    char car2;   // char für code
+    int puffer[sizepu];  // Puffer für verschlüsseltes Bild
+    int puffer2[sizepu];  // Puffer für Originalbild
 
-    char dateipfad[100];  // Dateipfad Originalbild
-    char dateipfad2[100];    // Dateipfad verschlüsseltes Bild
+    char *ausgabe;
+    char *code;
 
-    int i;  // for-Schleife
-    int j = 0;  // Hochzählen Nachricht
-    int h = -1;  // Hochzählen Code
+    char car;  // Char für malloc Reservierung (Code)
+    int spe = 0;  // Hochzählen für malloc Reservierung (Code)
 
-    // Nachricht Eingabe
-    printf("Geben sie die Nachricht ein:");
+    char dateipfad[100]; // Dateipfad verschlüsseltes Bild
+    char dateipfad2[100];  // Dateipfad Originalbild
 
-    hallo = malloc(sizeof(char));
-    while(scanf("%c", &car)&&car!= 10){
-        hallo = realloc((void *)hallo, (spe+1)*sizeof(char));
-        hallo[spe] = car;
-        spe++;
-    }
+    int i; // Hochzählen for-Schleife
+    int j = 0;  // Hochzählen der Ausgabe
+    int h = 0;  // Hochzählen Code
+
 
     // Code Eingabe
-    printf("\nCode eingeben:\n");
-    spe = 0;
     code = malloc(sizeof(char));
-
-    while(scanf("%c", &car2)&&car2!= 10){
+    printf("\nBitte code eingeben:\n");
+    while(scanf("%c", &car)&&car!= 10){
         code = realloc((void *)code, (spe+1)*sizeof(char));
-        code[spe] = car2;
+        code[spe] = car;
         spe++;
     }
 
-    // Originalbild einlesen
-    printf("\nGeben sie den Dateipfad an (bsp: C:\\Bildordner\\70.bmp):\n");
+
+    // Verschlüsseltes Bild einlesen
+    printf("\nGeben sie den Dateipfad des verschlusselten Bildes an (bsp: C:\\Bildordner\\70.bmp):\n");
     scanf("%s", dateipfad);
+
     if(Bildfile = fopen(dateipfad, "r+b")){
         printf("Bin offen ");
         fread(puffer, sizeof(int), sizepu, Bildfile);
@@ -53,26 +46,46 @@ int main()
     }
     fclose(Bildfile);
 
-    // Verschlüsselung
-    for(i=50; i<=strlen(hallo)*122; i += code[h]){
-        h++;
-        if(h == strlen(code)-1) h = 0;
-        puffer[i] = puffer[i] + hallo[j]-65;
-        j++;
-    }
 
-    free(code);
-
-    // In Bild verschlüsseln
-    printf("\n\n%s", hallo);
-    printf("\nDateipfad der Zieldatei eingeben:\n");
+    // Originalbild einlesen
+    printf("\nGeben sie den Dateipfad des Originalbildes an (bsp: C:\\Bildordner\\70.bmp):\n");
     scanf("%s", dateipfad2);
-    if(Bildfile = fopen(dateipfad2, "w+")){
-        printf("Bin offen2 ");
-        fwrite(puffer, sizeof(int), sizepu, Bildfile);
+
+        if(Bildfile = fopen(dateipfad2, "r+b")){
+        printf("Bin offen ");
+        fread(puffer2, sizeof(int), sizepu, Bildfile);
     }
     else{
-        printf("schreiben fehlgeschlagen ");
+        printf("fehlgeschlagen ");
     }
+    fclose(Bildfile);
+
+
+    // Bildvergleich und Entschlüsselung
+    i = 50;  // i 0-49 sind Informationsdaten, keine Bilddaten
+    spe = 1; // Speicher am Anfang auf 1 setzen
+
+    ausgabe = malloc(spe*sizeof(char));
+    do{
+        realloc((void *)ausgabe, (spe+1)*sizeof(char));
+        ausgabe[j] = puffer[i]-puffer2[i]+65;  // Verschlüsselung rückgängig machen
+        j++;
+        i += code[h];
+        h++;
+        if(h == strlen(code)-1) h = 0;
+    }while(puffer2[i] != puffer[i]);
+
+    printf("\n");
+
+    for(i = 0; i<=j; i++){
+       printf("%c", ausgabe[i]);
+   }
+
+    free(ausgabe);
+    free(code);
+    printf("Geben sie einen Buchstaben ein");
+    char a[2];
+    scanf("%s", &a);
+
     return 0;
 }
